@@ -2,7 +2,6 @@
 	heap
 	This question requires you to implement a binary heap function
 */
-// I AM NOT DONE
 
 use std::cmp::Ord;
 use std::default::Default;
@@ -37,7 +36,22 @@ where
     }
 
     pub fn add(&mut self, value: T) {
-        //TODO
+        // 将元素添加到末尾
+        self.items.push(value);
+        self.count += 1;
+        
+        // 执行上浮操作
+        let mut current = self.count;
+        while current > 1 {
+            let parent = self.parent_idx(current);
+            if (self.comparator)(&self.items[current], &self.items[parent]) {
+                // 交换当前元素和父元素
+                self.items.swap(current, parent);
+                current = parent;
+            } else {
+                break;
+            }
+        }
     }
 
     fn parent_idx(&self, idx: usize) -> usize {
@@ -57,8 +71,17 @@ where
     }
 
     fn smallest_child_idx(&self, idx: usize) -> usize {
-        //TODO
-		0
+        let left = self.left_child_idx(idx);
+        let right = self.right_child_idx(idx);
+        if right <= self.count {
+            if (self.comparator)(&self.items[left], &self.items[right]) {
+                left
+            } else {
+                right
+            }
+        } else {
+            left
+        }
     }
 }
 
@@ -79,13 +102,31 @@ where
 
 impl<T> Iterator for Heap<T>
 where
-    T: Default,
+    T: Default + Clone,
 {
     type Item = T;
 
     fn next(&mut self) -> Option<T> {
-        //TODO
-		None
+        if self.is_empty() {
+            return None;
+        }
+        let top = self.items.swap_remove(1);
+        self.count -= 1;
+
+        if !self.is_empty() {
+            let mut current = 1;
+            while self.children_present(current) {
+                let smallest = self.smallest_child_idx(current);
+                if (self.comparator)(&self.items[smallest], &self.items[current]) {
+                    self.items.swap(current, smallest);
+                    current = smallest;
+                } else {
+                    break;
+                }
+            }
+        }
+
+        Some(top)
     }
 }
 
